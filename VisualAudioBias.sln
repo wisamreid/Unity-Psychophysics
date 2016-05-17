@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualAudioBias.CSharp.Plugins", "VisualAudioBias.CSharp.Plugins.csproj", "{27115801-9E9B-542C-7F33-A04158554AED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualAudioBias.CSharp", "VisualAudioBias.CSharp.csproj", "{D49398DB-7978-16FE-EF16-F9F9DC7A2F46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualAudioBias.CSharp.Editor", "VisualAudioBias.CSharp.Editor.csproj", "{3ABAAE3C-D8A8-05ED-D912-E4B6C1C7EFA9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27115801-9E9B-542C-7F33-A04158554AED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27115801-9E9B-542C-7F33-A04158554AED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27115801-9E9B-542C-7F33-A04158554AED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27115801-9E9B-542C-7F33-A04158554AED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D49398DB-7978-16FE-EF16-F9F9DC7A2F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D49398DB-7978-16FE-EF16-F9F9DC7A2F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D49398DB-7978-16FE-EF16-F9F9DC7A2F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D49398DB-7978-16FE-EF16-F9F9DC7A2F46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ABAAE3C-D8A8-05ED-D912-E4B6C1C7EFA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABAAE3C-D8A8-05ED-D912-E4B6C1C7EFA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABAAE3C-D8A8-05ED-D912-E4B6C1C7EFA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABAAE3C-D8A8-05ED-D912-E4B6C1C7EFA9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
