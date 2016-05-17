@@ -10,8 +10,11 @@ public class SpatialExp : MonoBehaviour {
     public int numberOfZeroOffsetTrials = 5;
     public int numberOfSpeakers = 8;
     public float cameraHeight = 57.9f;
+    public float fixedDegreeDistributionStep = 0.1f;
     public float[] fixedDegreePositions;
     public float[] degreeOffsets;
+
+    float[] fixedDegreeDistributions;
     //Vive stuff
     GameObject hmd, controller1, controller2;
 
@@ -20,7 +23,7 @@ public class SpatialExp : MonoBehaviour {
 
     //experiment tracking
     int trialN = 0, currentScore = 0;
-    float standingRotation = 0.0f, currentOffset = 0.0f;
+    float standingRotation = 0.0f, relativeRotation = 0.0f, currentOffset = 0.0f;
     enum STAGE {practice, test };
     enum TRIAL_STATE { wandering, staring, runningStimuli, acceptingInput, finished };
     STAGE currentStage = STAGE.practice;
@@ -32,6 +35,11 @@ public class SpatialExp : MonoBehaviour {
     bool hmdReady = false, controller1Ready = false, controller2Ready = false, allReady = false;
 	// Use this for initialization
 	void Start () {
+        int len = fixedDegreePositions.Length;
+        fixedDegreeDistributions = new float[len];
+        for (int i = 0; i < len; i++) fixedDegreeDistributions[i] = (1.0f / ((float)len)) * (i);
+        printDistributions();
+
         getDevices();
         sphereMap = GameObject.Find("SphereMap");
         target = GameObject.Find("SphereMap/direction/Target");
@@ -84,6 +92,9 @@ public class SpatialExp : MonoBehaviour {
         //0 offset
         if(state == TRIAL_STATE.finished)
         {
+            //set offset to 0
+            currentOffset = 0.0f;
+            
             
         }
 
@@ -99,4 +110,26 @@ public class SpatialExp : MonoBehaviour {
     {
 
     }
+
+    //helpers
+    float chooseRandomDegreePosition()
+    {
+        float rnd = Random.value;
+        int i = 0;
+        while ((fixedDegreeDistributions[i] < rnd)) i++;
+        redistributeDegrees(i);
+        return fixedDegreePositions[i];
+    }
+
+    void redistributeDegrees(int idx)
+    {
+        int len = fixedDegreeDistributions.Length;
+        for (int i = 0; i < len; i++)
+        {
+            if (i == idx) fixedDegreeDistributions[i] += fixedDegreeDistributionStep;
+            else fixedDegreeDistributions[i] -= fixedDegreeDistributionStep / ((float)len - 1);
+        }
+    };
+
+    void printDistributions() { for (int i = 0; i < fixedDegreeDistributions.Length; i++) Debug.Log("distribution " + i + ": " + fixedDegreeDistributions[i]); }
 }
