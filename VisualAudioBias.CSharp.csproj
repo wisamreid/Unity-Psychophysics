@@ -69,6 +69,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\ExperimentMetadata.cs" />
     <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscBlobEvent.cs" />
     <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscBoolEvent.cs" />
     <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscCharEvent.cs" />

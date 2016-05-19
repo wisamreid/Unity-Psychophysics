@@ -10,6 +10,7 @@ public class SpatialExp : MonoBehaviour {
     public int numberOfAudioOnlyTrials = 5;
     public int numberOfZeroOffsetTrials = 5;
     public int numberOfSpeakers = 8;
+    public float globalSpeakerRotation = 45;
     public float visualStimulusPresentationTime = 0.05f;
     public float cameraHeight = 57.9f;
     public float fixedDegreeDistributionStep = 0.1f;
@@ -49,6 +50,7 @@ public class SpatialExp : MonoBehaviour {
     //logging
     int experimentN = 0;
     StreamWriter log;
+    ExperimentMetadata metadata;
 
     void Start () {
         osc = GetComponent<OscOut>();
@@ -58,6 +60,8 @@ public class SpatialExp : MonoBehaviour {
         fixedDegreeDistributions = new float[len];
         for (int i = 0; i < len; i++) fixedDegreeDistributions[i] = (1.0f / ((float)len)) * (i+1);
         printDistributions();
+
+        metadata = GetComponent<ExperimentMetadata>();
 
         getDevices();
         sphereMap = GameObject.Find("SphereMap");
@@ -109,7 +113,7 @@ public class SpatialExp : MonoBehaviour {
     {
         if (trialN > numberOfTestTrials && currentStage == STAGE.test) endExperiment();
         else if (trialN > numberOfPracticeTrials && currentStage == STAGE.practice) currentStage = STAGE.test;
-        runTrial();
+        else runTrial();
     }
 
     void setUpTrial()
@@ -158,7 +162,7 @@ public class SpatialExp : MonoBehaviour {
             if (gazeStartTime > 0.0f)
             {
                 gazeStartTime = 0.0f;
-                timeText.text = fixationTime.ToString();
+                timeText.text = "Please stare at the bullseye.";
             }
         }
     }
@@ -167,7 +171,7 @@ public class SpatialExp : MonoBehaviour {
     {
         showVisualStimulus();
         //stub for playing sound
-        int speakerNumber = (int)Mathf.Floor((standingRotation + relativeRotation) / (speakerAngle));
+        int speakerNumber = (int)Mathf.Floor(((standingRotation + relativeRotation) - globalSpeakerRotation) / (speakerAngle));
         osc.Send("spkr", speakerNumber);
         state = TRIAL_STATE.runningStimuli;
     }
@@ -181,6 +185,7 @@ public class SpatialExp : MonoBehaviour {
             logTrial(pointer1.lastAzimuth, pointer1.lastElevation, pointer1.lastTime - inputStartTime);
 
             trialN++;
+            timeText.text = "Please stare at the bullseye.";
             state = TRIAL_STATE.finished;
         }
         else if (pointer2.newInput)
@@ -188,6 +193,7 @@ public class SpatialExp : MonoBehaviour {
             logTrial(pointer2.lastAzimuth-(standingRotation + relativeRotation), pointer2.lastElevation, pointer2.lastTime - inputStartTime);
 
             trialN++;
+            timeText.text = "Please stare at the bullseye.";
             state = TRIAL_STATE.finished;
         }
     }
@@ -221,12 +227,17 @@ public class SpatialExp : MonoBehaviour {
     
     void setUpLogFile()
     {
-        string fileName = "Experiment" + experimentN + ".txt";
+        string fileName = "results/Experiment" + experimentN + ".txt";
         while (File.Exists(fileName)) {
             experimentN++;
-            fileName = "Experiment" + experimentN + ".txt";
+            fileName = "results/Experiment" + experimentN + ".txt";
         }
         log = new StreamWriter(fileName);
+
+        //create metadata log
+        StreamWriter meta = new StreamWriter("results/Experiment" + experimentN + "metadata.json");
+        meta.WriteLine(JsonUtility.ToJson(metadata));
+        meta.Close();
     }
 
     void logTrial(float az, float el, float t)
@@ -259,6 +270,7 @@ public class SpatialExp : MonoBehaviour {
         pointer2.clearInput();
         //get start time
         inputStartTime = Time.time;
+        timeText.text = "Please point at the source.";
         state = TRIAL_STATE.acceptingInput;
     }
 
