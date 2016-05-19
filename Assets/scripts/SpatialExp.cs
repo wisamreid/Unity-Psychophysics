@@ -13,6 +13,7 @@ public class SpatialExp : MonoBehaviour {
     public float visualStimulusPresentationTime = 0.05f;
     public float cameraHeight = 57.9f;
     public float fixedDegreeDistributionStep = 0.1f;
+    public float degreesOfErrorDeemedCorrect = 10.0f;
     public float[] fixedDegreePositions;
     public float[] degreeOffsets;
     public float fixationTime = 1.0f;
@@ -184,7 +185,7 @@ public class SpatialExp : MonoBehaviour {
         }
         else if (pointer2.newInput)
         {
-            logTrial(pointer2.lastAzimuth, pointer2.lastElevation, pointer2.lastTime - inputStartTime);
+            logTrial(pointer2.lastAzimuth-(standingRotation + relativeRotation), pointer2.lastElevation, pointer2.lastTime - inputStartTime);
 
             trialN++;
             state = TRIAL_STATE.finished;
@@ -221,20 +222,25 @@ public class SpatialExp : MonoBehaviour {
     void setUpLogFile()
     {
         string fileName = "Experiment" + experimentN + ".txt";
-        while (File.Exists(fileName)) experimentN++;
+        while (File.Exists(fileName)) {
+            experimentN++;
+            fileName = "Experiment" + experimentN + ".txt";
+        }
         log = new StreamWriter(fileName);
     }
 
     void logTrial(float az, float el, float t)
     {
-        log.WriteLine("Trial " + trialN + " :" + 
-            "Gaze was at " + standingRotation + 
-            ". Source was at "+ relativeRotation + 
-            ". Visual stimuli was offset to " + currentOffset + 
-            " degrees. User thought the input was at " + az + 
-            " degrees azimuth, " + el + 
-            " degrees elevation. Participant took " + t + 
-            "seconds to make a decision.");
+        string status = "Trial " + trialN + " :" +
+            "Gaze was at " + standingRotation +
+            ". Source was at " + relativeRotation +
+            ". Visual stimuli was offset to " + currentOffset +
+            " degrees. User thought the input was at " + az +
+            " degrees azimuth, " + el +
+            " degrees elevation. Participant took " + t +
+            "seconds to make a decision.";
+        log.WriteLine(status);
+        Debug.Log(status);
     }
 
     void showVisualStimulus()
