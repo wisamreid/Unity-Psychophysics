@@ -171,7 +171,7 @@ public class SpatialExp : MonoBehaviour {
     {
         showVisualStimulus();
         //stub for playing sound
-        int speakerNumber = (int)Mathf.Floor(((standingRotation + relativeRotation) - globalSpeakerRotation) / (speakerAngle));
+        int speakerNumber = Mathf.RoundToInt(((standingRotation + relativeRotation) - globalSpeakerRotation) / (speakerAngle));
         osc.Send("spkr", speakerNumber);
         state = TRIAL_STATE.runningStimuli;
     }
