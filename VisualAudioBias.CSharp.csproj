@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -75,6 +69,42 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscBlobEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscBoolEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscCharEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscColorEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscDoubleEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscFloatEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscIntEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscLongEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscMessageEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscStringEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\Events\OscTimeTagEvent.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\OscHelper.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\OscMapping.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\OscMessageType.cs" />
+    <Compile Include="Assets\OSC simpl\Base\Internal\OscPacket.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscBundle.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscImpulse.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscMessage.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscReceiveMode.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscRemoteStatus.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscSendMode.cs" />
+    <Compile Include="Assets\OSC simpl\Base\OscTimeTag.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\01 GettingStarted\GettingStartedReceiving.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\01 GettingStarted\GettingStartedSending.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\02 ArgumentTypes\ArgumentTypeTest.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\03 RuntimeUI\Scripts\OscInRuntimeUI.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\03 RuntimeUI\Scripts\OscOutRuntimeUI.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\03 RuntimeUI\Scripts\TestMessageGenerator.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\04 Bundles\UsingBundles.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\05 TimeTags\UsingTimeTags.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\06 Unicast\UsingUnicast.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\07 Broadcast\UsingBroadcast.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\08 Multicast\UsingMulticast.cs" />
+    <Compile Include="Assets\OSC simpl\Examples\09 Optimisations\Optimisations.cs" />
+    <Compile Include="Assets\OSC simpl\OscIn.cs" />
+    <Compile Include="Assets\OSC simpl\OscOut.cs" />
     <Compile Include="Assets\SteamVR\Extras\SteamVR_GazeTracker.cs" />
     <Compile Include="Assets\SteamVR\Extras\SteamVR_LaserPointer.cs" />
     <Compile Include="Assets\SteamVR\Extras\SteamVR_Teleporter.cs" />
@@ -107,11 +137,13 @@
     <Compile Include="Assets\SteamVR\Scripts\SteamVR_TrackedObject.cs" />
     <Compile Include="Assets\SteamVR\Scripts\SteamVR_UpdatePoses.cs" />
     <Compile Include="Assets\SteamVR\Scripts\SteamVR_Utils.cs" />
+    <Compile Include="Assets\scripts\ExpPointer.cs" />
     <Compile Include="Assets\scripts\SpatialExp.cs" />
     <Compile Include="Assets\scripts\stareTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Materials\mainSphere.shader" />
+    <None Include="Assets\OSC simpl\Documents\Versions.txt" />
     <None Include="Assets\SteamVR\Resources\SteamVR_AlphaOut.shader" />
     <None Include="Assets\SteamVR\Resources\SteamVR_Blit.shader" />
     <None Include="Assets\SteamVR\Resources\SteamVR_BlitFlip.shader" />
