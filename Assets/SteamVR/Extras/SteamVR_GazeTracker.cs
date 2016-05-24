@@ -71,6 +71,7 @@ public class SteamVR_GazeTracker : MonoBehaviour
                     GazeEventArgs e;
                     e.distance = dist;
                     OnGazeOn(e);
+                    
                 }
                 else if (dist >= gazeOutCutoff && isInGaze)
                 {

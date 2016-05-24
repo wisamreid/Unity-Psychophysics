@@ -10,11 +10,11 @@ public class SpatialExp : MonoBehaviour {
     public int numberOfAudioOnlyTrials = 5;
     public int numberOfZeroOffsetTrials = 5;
     public int numberOfSpeakers = 8;
-    public float globalSpeakerRotation = 45;
+    public float globalSpeakerRotation = 12;
     public float visualStimulusPresentationTime = 0.05f;
     public float cameraHeight = 57.9f;
     public float fixedDegreeDistributionStep = 0.1f;
-    public float degreesOfErrorDeemedCorrect = 10.0f;
+    public float percentOfDegreesErrorDeemedCorrect = 10.0f;
     public float[] fixedDegreePositions;
     public float[] degreeOffsets;
     public float fixationTime = 1.0f;
@@ -30,14 +30,17 @@ public class SpatialExp : MonoBehaviour {
     //experiment tracking
     int trialN = 0, currentScore = 0;
     float standingRotation = 0.0f, relativeRotation = 0.0f, currentOffset = 0.0f;
-    enum STAGE {practice, test };
+    enum STAGE { practice, test };
     enum TRIAL_STATE { wandering, fixated, runningStimuli, acceptingInput, finished };
     STAGE currentStage = STAGE.practice;
     TRIAL_STATE state = TRIAL_STATE.finished;
     float speakerAngle;
+    private bool currentTrialVisualOnly, currentTrialAudioOnly, currentTrialCongruent;
+    float baselineProbability = 0.2f;
+    float speakerNumber = 0;
 
     //gaze tracking
-    SteamVR_GazeTracker gazeTracker;
+    expGazeTracker gazeTracker;
     float gazeStartTime = 0.0f, inputStartTime = 0.0f;
     TextMesh timeText;
     //ready checks
@@ -52,14 +55,13 @@ public class SpatialExp : MonoBehaviour {
     StreamWriter log;
     ExperimentMetadata metadata;
 
-    void Start () {
+    void Start() {
         osc = GetComponent<OscOut>();
 
         speakerAngle = (360.0f / ((float)numberOfSpeakers));
         int len = fixedDegreePositions.Length;
         fixedDegreeDistributions = new float[len];
-        for (int i = 0; i < len; i++) fixedDegreeDistributions[i] = (1.0f / ((float)len)) * (i+1);
-        printDistributions();
+        for (int i = 0; i < len; i++) fixedDegreeDistributions[i] = (1.0f / ((float)len)) * (i + 1);
 
         metadata = GetComponent<ExperimentMetadata>();
 
@@ -69,7 +71,7 @@ public class SpatialExp : MonoBehaviour {
         direction = GameObject.Find("SphereMap/direction");
         visualStimuli = GameObject.Find("SphereMap/direction/offsetDirection");
         stimuliVisibility = GameObject.Find("SphereMap/direction/offsetDirection/Visual Stimulus").GetComponent<MeshRenderer>();
-        gazeTracker = target.GetComponent<SteamVR_GazeTracker>();
+        gazeTracker = target.GetComponent<expGazeTracker>();
         timeText = GameObject.Find("SphereMap/direction/Target/textHolder/timeText").GetComponent<TextMesh>();
         //set up target based on height input
         target.transform.localPosition = new Vector3(0.0f, cameraHeight, -2.064f);
@@ -77,27 +79,27 @@ public class SpatialExp : MonoBehaviour {
         //hide the visual stimulus
         stimuliVisibility.enabled = false;
         setUpLogFile();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update() {
         if (!allReady) getDevices();
         else runExperiment();
-	}
+    }
 
     void getDevices()
     {
-        if(!hmdReady)
+        if (!hmdReady)
             hmd = GameObject.Find("[CameraRig]/Camera (head)/Camera (eye)");
         if (hmd) hmdReady = true;
-        if(!controller1Ready)
+        if (!controller1Ready)
             controller1 = GameObject.Find("[CameraRig]/Controller (left)");
         if (controller1)
         {
             pointer1 = controller1.GetComponent<ExpPointer>();
             controller1Ready = true;
         }
-        if(!controller2Ready)
+        if (!controller2Ready)
             controller2 = GameObject.Find("[CameraRig]/Controller (right)");
         if (controller2)
         {
@@ -106,13 +108,31 @@ public class SpatialExp : MonoBehaviour {
         }
         if (hmdReady & controller1Ready & controller2Ready) {
             Debug.Log("All devices found!");
-            allReady = true; }
+            allReady = true;
+            osc.Send("start");
+            timeText.text = "Please stare at the bullseye.";
+        }
     }
 
     void runExperiment()
     {
-        if (trialN > numberOfTestTrials && currentStage == STAGE.test) endExperiment();
-        else if (trialN > numberOfPracticeTrials && currentStage == STAGE.practice) currentStage = STAGE.test;
+        if (trialN > numberOfTestTrials && currentStage == STAGE.test)
+        {
+            if (numberOfAudioOnlyTrials > 0 || numberOfVisualOnlyTrials > 0 || numberOfZeroOffsetTrials > 0)
+            {
+                Debug.Log("Still need to do baseline trials. Running extra trials.");
+                baselineProbability = 1.1f;
+                runTrial();
+            }
+            else endExperiment();
+        }
+        else if (trialN > numberOfPracticeTrials && currentStage == STAGE.practice)
+        {
+            Debug.Log("Practice done. Starting Test trials...");
+            currentStage = STAGE.test;
+            trialN = 0;
+            timeText.gameObject.active = false;
+        }
         else runTrial();
     }
 
@@ -120,16 +140,44 @@ public class SpatialExp : MonoBehaviour {
     {
         //offset
         if (currentStage == STAGE.practice) currentOffset = 0.0f;
-        else currentOffset = degreeOffsets[currentScore];
+        else
+        {
+            currentOffset = degreeOffsets[degreeOffsets.Length - (currentScore % degreeOffsets.Length) - 1];
+            if (Random.value < baselineProbability && (numberOfAudioOnlyTrials > 0))
+            {
+                Debug.Log("Starting audio only trial.");
+                numberOfAudioOnlyTrials--;
+                currentTrialAudioOnly = true;
+                currentOffset = 0.0f;
+            }
+            else if (Random.value < baselineProbability && (numberOfVisualOnlyTrials > 0))
+            {
+                Debug.Log("Starting visual only trial.");
+                numberOfVisualOnlyTrials--;
+                currentOffset = 0.0f;
+                currentTrialVisualOnly = true;
+            }
+            else if (Random.value > baselineProbability && (numberOfZeroOffsetTrials > 0))
+            {
+                Debug.Log("Starting congruent trial.");
+                numberOfZeroOffsetTrials--;
+                currentOffset = 0.0f;
+                currentTrialCongruent = true;
+            }
+        }
         //where the participant and target will rotate to:
-        standingRotation = speakerAngle * ((float)Random.Range(0, numberOfSpeakers));
+        speakerNumber = ((float)Random.Range(0, numberOfSpeakers));
+        standingRotation = speakerAngle *speakerNumber  - globalSpeakerRotation;
         //rotation of the "original" source:
         relativeRotation = chooseRandomDegreePosition();
-
+        //eh. We'll fix this for non discretely positioned speaker sources.
+        if (relativeRotation > 0) speakerNumber++;
+        else if (relativeRotation < 0) speakerNumber--;
         //set up environment
         direction.transform.localEulerAngles = new Vector3(0.0f, standingRotation, 0.0f);
 
         visualStimuli.transform.localEulerAngles = new Vector3(0.0f, relativeRotation + currentOffset, 0.0f);
+
 
 
         //all set up, proceed
@@ -166,13 +214,12 @@ public class SpatialExp : MonoBehaviour {
             }
         }
     }
-    
+
     void triggerStimulus()
     {
         showVisualStimulus();
         //stub for playing sound
-        int speakerNumber = Mathf.RoundToInt(((standingRotation + relativeRotation) - globalSpeakerRotation) / (speakerAngle));
-        osc.Send("spkr", speakerNumber);
+        if (!currentTrialVisualOnly) osc.Send("spkr", speakerNumber);
         state = TRIAL_STATE.runningStimuli;
     }
 
@@ -182,7 +229,7 @@ public class SpatialExp : MonoBehaviour {
         //pointing  happens here
         if (pointer1.newInput)
         {
-            logTrial(pointer1.lastAzimuth, pointer1.lastElevation, pointer1.lastTime - inputStartTime);
+            if (currentStage == STAGE.test) logTrial(pointer1.lastAzimuth, pointer1.lastElevation, pointer1.lastTime - inputStartTime);
 
             trialN++;
             timeText.text = "Please stare at the bullseye.";
@@ -190,7 +237,7 @@ public class SpatialExp : MonoBehaviour {
         }
         else if (pointer2.newInput)
         {
-            logTrial(pointer2.lastAzimuth-(standingRotation + relativeRotation), pointer2.lastElevation, pointer2.lastTime - inputStartTime);
+            if (currentStage == STAGE.test) logTrial(pointer2.lastAzimuth, pointer2.lastElevation, pointer2.lastTime - inputStartTime);
 
             trialN++;
             timeText.text = "Please stare at the bullseye.";
@@ -200,23 +247,23 @@ public class SpatialExp : MonoBehaviour {
     void runTrial()
     {
         //0 offset
-        if(state == TRIAL_STATE.finished)
+        if (state == TRIAL_STATE.finished)
         {
             //set up for next trial
             setUpTrial();
-            
+
         }
-        else if(state == TRIAL_STATE.wandering)
+        else if (state == TRIAL_STATE.wandering)
         {
             //wait for user's gaze
             waitForGaze();
-            
+
         }
-        else if(state == TRIAL_STATE.fixated)
+        else if (state == TRIAL_STATE.fixated)
         {
             triggerStimulus();
         }
-        else if(state == TRIAL_STATE.acceptingInput)
+        else if (state == TRIAL_STATE.acceptingInput)
         {
 
             getPointerInput();
@@ -224,16 +271,16 @@ public class SpatialExp : MonoBehaviour {
 
 
     }
-    
+
     void setUpLogFile()
     {
-        string fileName = "results/Experiment" + experimentN + ".txt";
+        string fileName = "results/Experiment" + experimentN + ".csv";
         while (File.Exists(fileName)) {
             experimentN++;
-            fileName = "results/Experiment" + experimentN + ".txt";
+            fileName = "results/Experiment" + experimentN + ".csv";
         }
         log = new StreamWriter(fileName);
-
+        log.WriteLine("TrialNumber,StandingRotation,SourceOffset,VisualOffset,azimuthInput,ElevationInput,inputTime,baseline");
         //create metadata log
         StreamWriter meta = new StreamWriter("results/Experiment" + experimentN + "metadata.json");
         meta.WriteLine(JsonUtility.ToJson(metadata));
@@ -242,22 +289,33 @@ public class SpatialExp : MonoBehaviour {
 
     void logTrial(float az, float el, float t)
     {
-        string status = "Trial " + trialN + " :" +
-            "Gaze was at " + standingRotation +
-            ". Source was at " + relativeRotation +
-            ". Visual stimuli was offset to " + currentOffset +
-            " degrees. User thought the input was at " + az +
-            " degrees azimuth, " + el +
-            " degrees elevation. Participant took " + t +
-            "seconds to make a decision.";
+        float targetAz = (standingRotation + relativeRotation);
+        float azError = az - targetAz;
+        azError = Mathf.Min(azError, 360.0f - azError);
+        //criteria right?
+        if (Mathf.Abs(azError) <= currentOffset * percentOfDegreesErrorDeemedCorrect && 
+            (!(currentTrialCongruent||currentTrialAudioOnly||currentTrialVisualOnly))) currentScore++;
+
+        string status = trialN + "," +
+            standingRotation +
+            "," + relativeRotation +
+            "," + currentOffset +
+            "," + azError +
+            "," + el +
+            "," + t;
+        if (currentTrialAudioOnly) status += ",audio";
+        else if (currentTrialVisualOnly) status += ",visual";
+        else if (currentTrialCongruent) status += ",congruent";
+        else status += ",null";
         log.WriteLine(status);
-        Debug.Log(status);
+        Debug.Log("Trial " + trialN + ". Offset " + currentOffset + "Pointing Error: " + azError);
+        currentTrialVisualOnly = false; currentTrialAudioOnly = false; currentTrialCongruent = false;
     }
 
     void showVisualStimulus()
     {
 
-        stimuliVisibility.enabled = true;
+        if(!currentTrialAudioOnly) stimuliVisibility.enabled = true;
         Invoke("hideVisualStimulus", visualStimulusPresentationTime);
     }
 
@@ -276,6 +334,7 @@ public class SpatialExp : MonoBehaviour {
 
     void endExperiment()
     {
+        timeText.gameObject.active = true;
         timeText.text = "EXPERIMENT\nDONE";
         log.Close();
     }
