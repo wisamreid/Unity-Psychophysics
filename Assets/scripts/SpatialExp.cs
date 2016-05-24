@@ -42,7 +42,7 @@ public class SpatialExp : MonoBehaviour {
     //gaze tracking
     expGazeTracker gazeTracker;
     float gazeStartTime = 0.0f, inputStartTime = 0.0f;
-    TextMesh timeText;
+    TextMesh timeText, uiText;
     //ready checks
     bool hmdReady = false, controller1Ready = false, controller2Ready = false, allReady = false;
     // Use this for initialization
@@ -73,6 +73,7 @@ public class SpatialExp : MonoBehaviour {
         stimuliVisibility = GameObject.Find("SphereMap/direction/offsetDirection/Visual Stimulus").GetComponent<MeshRenderer>();
         gazeTracker = target.GetComponent<expGazeTracker>();
         timeText = GameObject.Find("SphereMap/direction/Target/textHolder/timeText").GetComponent<TextMesh>();
+        
         //set up target based on height input
         target.transform.localPosition = new Vector3(0.0f, cameraHeight, -2.064f);
 
@@ -110,8 +111,22 @@ public class SpatialExp : MonoBehaviour {
             Debug.Log("All devices found!");
             allReady = true;
             osc.Send("start");
+            //get UI text
+            uiText = GameObject.Find("[CameraRig]/Camera (head)/uiText").GetComponent<TextMesh>();
+            uiText.text = "";
             timeText.text = "Please stare at the bullseye.";
         }
+    }
+
+    void showUIText(string txt, float seconds)
+    {
+        uiText.text = txt;
+        Invoke("hideUIText", seconds);
+    }
+
+    void hideUIText()
+    {
+        uiText.text = "";
     }
 
     void runExperiment()
@@ -230,7 +245,13 @@ public class SpatialExp : MonoBehaviour {
         if (pointer1.newInput)
         {
             if (currentStage == STAGE.test) logTrial(pointer1.lastAzimuth, pointer1.lastElevation, pointer1.lastTime - inputStartTime);
-
+            if (currentStage == STAGE.practice)
+            {
+                float targetAz = (standingRotation + relativeRotation);
+                float azError = pointer1.lastAzimuth - targetAz;
+                azError = Mathf.Min(azError, 360.0f - azError);
+                showUIText("Got it!\nYou were " + azError + " off.", 4.0f);
+            }
             trialN++;
             timeText.text = "Please stare at the bullseye.";
             state = TRIAL_STATE.finished;
@@ -238,7 +259,13 @@ public class SpatialExp : MonoBehaviour {
         else if (pointer2.newInput)
         {
             if (currentStage == STAGE.test) logTrial(pointer2.lastAzimuth, pointer2.lastElevation, pointer2.lastTime - inputStartTime);
-
+            if (currentStage == STAGE.practice)
+            {
+                float targetAz = (standingRotation + relativeRotation);
+                float azError = pointer2.lastAzimuth - targetAz;
+                azError = Mathf.Min(azError, 360.0f - azError);
+                showUIText("Cool!\nYou were " + Mathf.RoundToInt(azError) + "\ndegrees off.", 4.0f);
+            }
             trialN++;
             timeText.text = "Please stare at the bullseye.";
             state = TRIAL_STATE.finished;
@@ -309,6 +336,7 @@ public class SpatialExp : MonoBehaviour {
         else status += ",null";
         log.WriteLine(status);
         Debug.Log("Trial " + trialN + ". Offset " + currentOffset + "Pointing Error: " + azError);
+        
         currentTrialVisualOnly = false; currentTrialAudioOnly = false; currentTrialCongruent = false;
     }
 
