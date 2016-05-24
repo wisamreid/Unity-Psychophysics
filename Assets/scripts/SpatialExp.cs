@@ -274,15 +274,15 @@ public class SpatialExp : MonoBehaviour {
 
     void setUpLogFile()
     {
-        string fileName = "results/Experiment" + experimentN + ".csv";
+        string fileName = "results/space/SpaceExperiment" + experimentN + ".csv";
         while (File.Exists(fileName)) {
             experimentN++;
-            fileName = "results/Experiment" + experimentN + ".csv";
+            fileName = "results/space/SpaceExperiment" + experimentN + ".csv";
         }
         log = new StreamWriter(fileName);
         log.WriteLine("TrialNumber,StandingRotation,SourceOffset,VisualOffset,azimuthInput,ElevationInput,inputTime,baseline");
         //create metadata log
-        StreamWriter meta = new StreamWriter("results/Experiment" + experimentN + "metadata.json");
+        StreamWriter meta = new StreamWriter("results/space/SpaceExperiment" + experimentN + "metadata.json");
         meta.WriteLine(JsonUtility.ToJson(metadata));
         meta.Close();
     }
